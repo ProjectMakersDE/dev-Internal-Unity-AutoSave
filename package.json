@@ -1,6 +1,6 @@
 {
   "name": "com.projectmakers.pmautosave",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "displayName": "PM_AutoSave",
   "description": "This is a small tool to save automatically and backup you scenes.",
   "unity": "2018.1",
