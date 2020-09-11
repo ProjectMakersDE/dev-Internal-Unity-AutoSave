@@ -10,7 +10,7 @@ using System.Linq;
 
 public class AutoSave : EditorWindow
 {
-   private readonly GUIStyle _guiStyleLable = new GUIStyle();
+   private readonly GUIStyle _guiStyleLabel = new GUIStyle();
 
    private static bool _autoSave;
    private static bool _saveOnPlay;
@@ -53,10 +53,9 @@ public class AutoSave : EditorWindow
       {
          if (string.IsNullOrEmpty(_backupPath))
          {
-            string backupPath = AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(this));
-            backupPath = backupPath.Substring(0, backupPath.LastIndexOf('/'));
-            backupPath = backupPath.Substring(0, backupPath.LastIndexOf('/') + 1);
-            backupPath = backupPath + "Backup/";
+            string backupPath = Application.dataPath;
+            backupPath = backupPath.Substring(Application.dataPath.Length);
+            _backupPath = backupPath + "Backups/Scenes/";
             _backupPath = backupPath.Replace("Assets/", "");
          }
 
@@ -80,7 +79,7 @@ public class AutoSave : EditorWindow
          string path = AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(this));
          path = path.Substring(0, path.LastIndexOf('/'));
          path = path.Substring(0, path.LastIndexOf('/') + 1);
-         return path + "Texture/";
+         return path + "Textures/";
       }
    }
 
@@ -227,10 +226,10 @@ public class AutoSave : EditorWindow
 
             if (!AssetDatabase.IsValidFolder(proofPath.Substring(0, proofPath.Length - 1)))
             {
-               string curParrentFolder = proofPath.Substring(0, proofPath.LastIndexOf('/'));
-               curParrentFolder = curParrentFolder.Substring(0, curParrentFolder.LastIndexOf('/') + 1);
-               AssetDatabase.CreateFolder(curParrentFolder.Substring(0, curParrentFolder.Length - 1), splittingPath[j - 1]);
-               Log(0, "AutoSave - Create a backup folder: " + curParrentFolder + splittingPath[j - 1]);
+               string curParentFolder = proofPath.Substring(0, proofPath.LastIndexOf('/'));
+               curParentFolder = curParentFolder.Substring(0, curParentFolder.LastIndexOf('/') + 1);
+               AssetDatabase.CreateFolder(curParentFolder.Substring(0, curParentFolder.Length - 1), splittingPath[j - 1]);
+               Log(0, "AutoSave - Create a backup folder: " + curParentFolder + splittingPath[j - 1]);
             }
          }
 
@@ -384,26 +383,27 @@ public class AutoSave : EditorWindow
 
       GUILayout.EndVertical();
       GUILayout.EndHorizontal();
+
+      GUILayout.Space(10);
+
       GUILayout.BeginHorizontal();
+      
       GUI.skin.button.normal.textColor = Color.white;
-      GUI.skin.button.fontSize = 10;
-      GUI.skin.button.fontStyle = FontStyle.Normal;
       GUI.backgroundColor = new Color(0.63f, 0f, 0f);
 
-      if (GUILayout.Button("Save it manually!"))
+
+      if (GUILayout.Button("Save it manually!",EditorStyles.toolbarButton))
       {
          Save();
       }
       // ===== Backup ===== \\
 
-      if (GUILayout.Button("Change backup settings..."))
+      if (GUILayout.Button("Change backup settings...",EditorStyles.toolbarButton))
       {
          _showBackup = !_showBackup;
       }
 
       GUI.skin.button.normal.textColor = Color.black;
-      GUI.skin.button.fontSize = 12;
-      GUI.skin.button.fontStyle = FontStyle.Normal;
       GUI.backgroundColor = Color.white;
       GUILayout.EndHorizontal();
 
@@ -448,9 +448,9 @@ public class AutoSave : EditorWindow
          GUILayout.EndVertical();
          GUILayout.FlexibleSpace();
          GUILayout.EndHorizontal();
-         
+
          GUILayout.Space(10);
-         
+
          /* Only for development!
 
          if (GUILayout.Button("Reset Settings"))
@@ -461,14 +461,13 @@ public class AutoSave : EditorWindow
       }
 
       GUILayout.Space(10);
-      _guiStyleLable.fontSize = 12;
-      _guiStyleLable.fontStyle = FontStyle.Italic;
-      _guiStyleLable.normal.textColor = new Color(.58f, .58f, .58f);
+      _guiStyleLabel.fontSize = 12;
+      _guiStyleLabel.fontStyle = FontStyle.Italic;
+      _guiStyleLabel.normal.textColor = new Color(.58f, .58f, .58f);
 
-      GUILayout.Label("This window must be open for automatic saving!\nThe window does not have to be in the foreground, but don't close it.", _guiStyleLable);
-      
+      GUILayout.Label("This window must be open for automatic saving!\nThe window does not have to be in the foreground, but don't close it.", _guiStyleLabel);
+
       GUILayout.FlexibleSpace();
-      GUILayout.Space(16);
       GUILayout.BeginHorizontal();
 
       if (GUILayout.Button("ProjectMakers.de", EditorStyles.toolbarButton))
