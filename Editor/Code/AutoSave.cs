@@ -431,7 +431,7 @@ public class AutoSave : EditorWindow
 
          Vector2 pathSize = GUI.skin.box.CalcSize(new GUIContent(BackupPath));
          EditorGUIUtility.labelWidth = 115;
-         EditorPrefs.SetString("PM_AS_BACKUPPATH", EditorGUILayout.TextField("Backup save path: ", BackupPath, GUILayout.MinWidth(EditorGUIUtility.labelWidth + pathSize.x)));
+         _backupPath = EditorGUILayout.TextField("Backup save path: ", BackupPath, GUILayout.MinWidth(EditorGUIUtility.labelWidth + pathSize.x));
 
          GUILayout.EndHorizontal();
          GUILayout.EndVertical();

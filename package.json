@@ -1,14 +1,14 @@
 {
   "name": "com.projectmakers.pmautosave",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "displayName": "PM_AutoSave",
-  "description": "This is a small tool to save automatically and backup you scenes.",
+  "description": "# Unity-PM_AutoSave\r This is a small tool to save automatic and backup you scenes.\r \r Deutsche Beschreibung:\r \r 1.\tBeschreibung\r \t    Nichts ist wichtiger als regelmäßiges Speichern.\r \t    Doch schnell ist es passiert das man es vor dem testen einfach verg",
   "unity": "2018.1",
   "unityRelease": "0b5",
   "keywords": [
-    "AutoSave",
-    "ProjectMakers",
-    "PM_AutoSave"
+    "PM_AutoSave",
+    "PM_AutoSave",
+    "ProjectMakers"
   ],
   "author": {
     "name": "ProjectMakers",
