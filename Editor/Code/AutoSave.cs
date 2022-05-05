@@ -25,52 +25,19 @@ public class AutoSave : EditorWindow
    private static int _saveIntervalSlider = 5;
 
    private static string _backupPath;
-   private static string _currentBackupPath;
-   private static string _backupUserName;
    private static int _backupCount;
 
    private Texture2D AsAsset => AssetDatabase.LoadAssetAtPath(Path + "asset.png", typeof(Texture2D)) as Texture2D;
-
    private Texture2D AsDisable => AssetDatabase.LoadAssetAtPath(Path + "disable.png", typeof(Texture2D)) as Texture2D;
-
    private Texture2D AsEnable => AssetDatabase.LoadAssetAtPath(Path + "enable.png", typeof(Texture2D)) as Texture2D;
-
    private Texture2D AsInfo => AssetDatabase.LoadAssetAtPath(Path + "info.png", typeof(Texture2D)) as Texture2D;
-
    private Texture2D AsOnOff => AssetDatabase.LoadAssetAtPath(Path + "onoff.png", typeof(Texture2D)) as Texture2D;
-
    private Texture2D AsOnPlay => AssetDatabase.LoadAssetAtPath(Path + "play.png", typeof(Texture2D)) as Texture2D;
-
    private Texture2D AsTime => AssetDatabase.LoadAssetAtPath(Path + "time.png", typeof(Texture2D)) as Texture2D;
-
    private Texture2D AsBackup => AssetDatabase.LoadAssetAtPath(Path + "backup.png", typeof(Texture2D)) as Texture2D;
-
    private Texture2D PmLogo => AssetDatabase.LoadAssetAtPath(Path + "logo.png", typeof(Texture2D)) as Texture2D;
 
-   private string BackupPath
-   {
-      get
-      {
-         if (string.IsNullOrEmpty(_backupPath))
-         {
-            string backupPath = Application.dataPath;
-            backupPath = backupPath.Substring(Application.dataPath.Length);
-            _backupPath = backupPath + "Backups/Scenes/";
-            _backupPath = backupPath.Replace("Assets/", "");
-         }
-
-         return _backupPath;
-      }
-   }
-
-   private int BackupCount
-   {
-      get
-      {
-         _backupCount = EditorPrefs.GetInt("PM_AS_BACKUPCOUNT");
-         return _backupCount;
-      }
-   }
+   private int BackupCount => EditorPrefs.GetInt("PM_AS_BACKUPCOUNT");
 
    private string Path
    {
@@ -102,26 +69,24 @@ public class AutoSave : EditorWindow
 
    private static void EditorUpdate()
    {
-      if (_lastAutosave.AddMinutes(_saveInterval) <= DateTime.Now)
-      {
-         if (SceneManager.GetActiveScene().isDirty)
-         {
-            Save();
-            _lastAutosave = DateTime.Now;
-         }
-      }
+      if (_lastAutosave.AddMinutes(_saveInterval) > DateTime.Now) return;
+      if (!SceneManager.GetActiveScene().isDirty) return;
+
+      Save();
+      _lastAutosave = DateTime.Now;
    }
 
    private void LoadSettings()
    {
       _autoSave = EditorPrefs.GetBool("PM_AS_AUTOSAVE", true);
       _saveOnPlay = EditorPrefs.GetBool("PM_AS_SAVEONPLAY", true);
+      _saveAssets = EditorPrefs.GetBool("PM_AS_SAVEASSET", true);
       _debugLog = EditorPrefs.GetBool("PM_AS_DEBUGLOG", true);
       _saveInterval = EditorPrefs.GetInt("PM_AS_SAVEINTERVAL", 2);
       _saveIntervalSlider = EditorPrefs.GetInt("PM_AS_SAVEINTERVAL", 2);
       _backup = EditorPrefs.GetBool("PM_AS_BACKUP", true);
-      _backupPath = EditorPrefs.GetString("PM_AS_BACKUPPATH");
-      _backupCount = EditorPrefs.GetInt("PM_AS_BACKUPCOUNT");
+      _backupPath = EditorPrefs.GetString("PM_AS_BACKUPPATH", "Backup/Test");
+      _backupCount = EditorPrefs.GetInt("PM_AS_BACKUPCOUNT", 10);
    }
 
    private static void OnEnterInPlayMode(PlayModeStateChange state)
@@ -139,102 +104,70 @@ public class AutoSave : EditorWindow
    private static void Save()
    {
       Scene activeScene = SceneManager.GetActiveScene();
-      string curSceneName = activeScene.name;
-
-      if (_backup)
-      {
-         string curBackupPath = EditorPrefs.GetString("PM_AS_BACKUPPATH");
-
-         if (!curBackupPath.EndsWith("/"))
-         {
-            curBackupPath = curBackupPath + "/";
-         }
-
-         _backupUserName = SystemInfo.deviceName;
-         curBackupPath = curBackupPath + _backupUserName + "/";
-         string curpath = "Assets/" + curBackupPath + curSceneName;
-         CreateBackupFolder(curpath, curBackupPath, curSceneName);
-
-         try
-         {
-            EditorSceneManager.SaveScene(activeScene, BackupFileName(curpath, curSceneName), true);
-            Log(0, "AutoSave - Create a backup for - " + curSceneName + " - Scene!");
-            ClearBackupFolder(curpath);
-         }
-         catch (Exception e)
-         {
-            Log(2, "AutoSave - Create a !! NO !! backup for - " + curSceneName + " - Scene!");
-            Log(2, "Exception: " + e);
-            throw;
-         }
-      }
 
       try
       {
          EditorSceneManager.SaveScene(activeScene);
-         if (_saveAssets) AssetDatabase.SaveAssets();
-         Log(0, "AutoSave - " + activeScene.name + " is saved!");
+
+         if (_saveAssets)
+            AssetDatabase.SaveAssets();
+
+         Log(0, $"AutoSave - {activeScene.name} is saved!");
       }
       catch (Exception e)
       {
-         Log(2, "AutoSave - " + activeScene.name + " is !! NOT !! saved!");
-         Log(2, "Exception: " + e);
-         throw;
+         Log(2, $"AutoSave - {activeScene.name} is !! NOT !! saved!\nException: {e}");
+      }
+
+      if (!_backup) return;
+
+      var username = SystemInfo.deviceName;
+      var curSceneName = activeScene.name;
+      var fileName = BackupFileName(curSceneName);
+
+      var path = System.IO.Path.Combine("Assets/", _backupPath, username, curSceneName);
+      var filePath = System.IO.Path.Combine(path, fileName);
+      
+      if (!Directory.Exists(path))
+         Directory.CreateDirectory(path);
+
+      try
+      {
+         EditorSceneManager.SaveScene(activeScene, filePath, true);
+         Log(0, $"AutoSave - Create a backup for - {curSceneName} - Scene!");
+         ClearBackupFolder(path);
+      }
+      catch (Exception e)
+      {
+         Log(2, $"AutoSave - Create a !! NO !! backup for -{curSceneName} - Scene!\nException: {e}");
       }
    }
 
-   private static void ClearBackupFolder(string curpath)
+   private static void ClearBackupFolder(string path)
    {
-      var fileInfo = new DirectoryInfo(curpath).GetFiles();
+      var fileInfo = new DirectoryInfo(path).GetFiles();
 
+      // The *2 because each file has a ".meta" file 
       if (fileInfo.Length >= _backupCount * 2)
       {
-         foreach (var fi in new DirectoryInfo(curpath).GetFiles().OrderByDescending(x => x.LastWriteTime).Skip(_backupCount * 2))
-         {
+         var dir = fileInfo.OrderByDescending(x => x.LastWriteTime).Skip(_backupCount * 2);
+
+         foreach (var fi in dir)
             fi.Delete();
-         }
 
          AssetDatabase.Refresh();
       }
    }
 
-   private static string BackupFileName(string curpath, string curSceneName)
+   private static string BackupFileName(string curSceneName)
    {
       var filename = DateTime.Now.Ticks.ToString();
       filename = filename.Remove(filename.Length - 6);
       filename = filename.Remove(0, 3);
       filename = int.Parse(filename).ToString("#,###");
       filename = filename.Replace(",", ".");
-      filename = curpath + "/" + curSceneName + " v." + filename + ".unity";
+      filename = curSceneName + " v." + filename + ".unity";
       return filename;
-   }
-
-   private static void CreateBackupFolder(string curpath, string curBackupPath, string curSceneName)
-   {
-      if (!AssetDatabase.IsValidFolder(curpath))
-      {
-         var splittingPath = curBackupPath.Split('/');
-
-         for (int j = 0; j < splittingPath.Length; j++)
-         {
-            string proofPath = "Assets/";
-
-            for (int k = 0; k < j; k++)
-            {
-               proofPath = proofPath + splittingPath[k] + "/";
-            }
-
-            if (!AssetDatabase.IsValidFolder(proofPath.Substring(0, proofPath.Length - 1)))
-            {
-               string curParentFolder = proofPath.Substring(0, proofPath.LastIndexOf('/'));
-               curParentFolder = curParentFolder.Substring(0, curParentFolder.LastIndexOf('/') + 1);
-               AssetDatabase.CreateFolder(curParentFolder.Substring(0, curParentFolder.Length - 1), splittingPath[j - 1]);
-               Log(0, "AutoSave - Create a backup folder: " + curParentFolder + splittingPath[j - 1]);
-            }
-         }
-
-         AssetDatabase.CreateFolder("Assets/" + curBackupPath.Substring(0, curBackupPath.Length - 1), curSceneName);
-      }
    }
 
    private void SaveSettings()
@@ -283,7 +216,9 @@ public class AutoSave : EditorWindow
    private void OnEnable()
    {
       LoadSettings();
-      if (_autoSave) AutosaveOn();
+
+      if (_autoSave)
+         AutosaveOn();
    }
 
    private void OnGUI()
@@ -309,10 +244,8 @@ public class AutoSave : EditorWindow
       GUILayout.Space(10);
       GUILayout.Label(_debugLog ? AsEnable : AsDisable, GUILayout.MaxHeight(16), GUILayout.MaxWidth(16));
       GUILayout.EndHorizontal();
-      GUILayout.Space(-4);
 
-      if (GUILayout.Button(new GUIContent(AsInfo, "Create Debug.Log"), GUILayout.MaxHeight(28),
-         GUILayout.MaxWidth(28)))
+      if (GUILayout.Button(new GUIContent(AsInfo, "Create Debug.Log"), GUILayout.MaxHeight(28), GUILayout.MaxWidth(28)))
       {
          _debugLog = !_debugLog;
          Log(0, "AutoSave - Debug.Log = " + _debugLog + " !");
@@ -325,7 +258,6 @@ public class AutoSave : EditorWindow
       GUILayout.Space(10);
       GUILayout.Label(_saveOnPlay ? AsEnable : AsDisable, GUILayout.MaxHeight(16), GUILayout.MaxWidth(16));
       GUILayout.EndHorizontal();
-      GUILayout.Space(-4);
 
       if (GUILayout.Button(new GUIContent(AsOnPlay, "Save on Play"), GUILayout.MaxHeight(28), GUILayout.MaxWidth(28)))
       {
@@ -340,7 +272,7 @@ public class AutoSave : EditorWindow
       GUILayout.Space(10);
       GUILayout.Label(_saveAssets ? AsEnable : AsDisable, GUILayout.MaxHeight(16), GUILayout.MaxWidth(16));
       GUILayout.EndHorizontal();
-      GUILayout.Space(-4);
+
       if (GUILayout.Button(new GUIContent(AsAsset, "Save Assets"), GUILayout.MaxHeight(28), GUILayout.MaxWidth(28)))
       {
          _saveAssets = !_saveAssets;
@@ -371,37 +303,30 @@ public class AutoSave : EditorWindow
       GUILayout.Space(10);
       GUILayout.Label(_autoSave ? AsEnable : AsDisable, GUILayout.MaxHeight(16), GUILayout.MaxWidth(16));
       GUILayout.EndHorizontal();
-      GUILayout.Space(-4);
 
       if (GUILayout.Button(new GUIContent(AsOnOff, "AutoSave ON/OFF"), GUILayout.MaxHeight(28), GUILayout.MaxWidth(28)))
       {
-         if (_autoSave) AutosaveOff();
-         else AutosaveOn();
+         if (_autoSave)
+            AutosaveOff();
+         else
+            AutosaveOn();
 
          SaveSettings();
       }
 
       GUILayout.EndVertical();
       GUILayout.EndHorizontal();
-
       GUILayout.Space(10);
-
       GUILayout.BeginHorizontal();
-      
+
       GUI.skin.button.normal.textColor = Color.white;
       GUI.backgroundColor = new Color(0.63f, 0f, 0f);
 
-
-      if (GUILayout.Button("Save it manually!",EditorStyles.toolbarButton))
-      {
+      if (GUILayout.Button("Save it manually!", EditorStyles.toolbarButton))
          Save();
-      }
-      // ===== Backup ===== \\
 
-      if (GUILayout.Button("Change backup settings...",EditorStyles.toolbarButton))
-      {
+      if (GUILayout.Button("Change backup settings...", EditorStyles.toolbarButton))
          _showBackup = !_showBackup;
-      }
 
       GUI.skin.button.normal.textColor = Color.black;
       GUI.backgroundColor = Color.white;
@@ -415,7 +340,7 @@ public class AutoSave : EditorWindow
          GUILayout.Space(10);
          GUILayout.Label(_backup ? AsEnable : AsDisable, GUILayout.MaxHeight(16), GUILayout.MaxWidth(16));
          GUILayout.EndHorizontal();
-         GUILayout.Space(-4);
+
          if (GUILayout.Button(new GUIContent(AsBackup, "Save Project in backupfolder"), GUILayout.MaxHeight(28), GUILayout.MaxWidth(28)))
          {
             _backup = !_backup;
@@ -429,9 +354,10 @@ public class AutoSave : EditorWindow
          GUILayout.BeginHorizontal();
          GUILayout.Space(10);
 
-         Vector2 pathSize = GUI.skin.box.CalcSize(new GUIContent(BackupPath));
+         Vector2 pathSize = GUI.skin.box.CalcSize(new GUIContent(_backupPath));
          EditorGUIUtility.labelWidth = 115;
-         _backupPath = EditorGUILayout.TextField("Backup save path: ", BackupPath, GUILayout.MinWidth(EditorGUIUtility.labelWidth + pathSize.x));
+
+         _backupPath = EditorGUILayout.TextField("Backup save path: ", _backupPath, GUILayout.MinWidth(EditorGUIUtility.labelWidth + pathSize.x + 15));
 
          GUILayout.EndHorizontal();
          GUILayout.EndVertical();
@@ -450,14 +376,7 @@ public class AutoSave : EditorWindow
          GUILayout.EndHorizontal();
 
          GUILayout.Space(10);
-
-         /* Only for development!
-
-         if (GUILayout.Button("Reset Settings"))
-         {
-             ResetSettings();
-         }
-         */
+         GUILayout.Label("The backup directory is created in your project directory in \"Assets/your specified path\".", _guiStyleLabel);
       }
 
       GUILayout.Space(10);
@@ -471,9 +390,7 @@ public class AutoSave : EditorWindow
       GUILayout.BeginHorizontal();
 
       if (GUILayout.Button("ProjectMakers.de", EditorStyles.toolbarButton))
-      {
          Application.OpenURL("https://projectmakers.de");
-      }
 
       GUILayout.EndHorizontal();
    }
