@@ -70,10 +70,20 @@ public class AutoSave : EditorWindow
    private static void EditorUpdate()
    {
       if (_lastAutosave.AddMinutes(_saveInterval) > DateTime.Now) return;
-      if (!SceneManager.GetActiveScene().isDirty) return;
 
-      Save();
-      _lastAutosave = DateTime.Now;
+      for (int i = 0; i < EditorSceneManager.sceneCount; i++)
+      {
+         var scene = EditorSceneManager.GetSceneAt(i);
+
+         if (scene.isDirty)
+         {
+            Save();
+            _lastAutosave = DateTime.Now;
+            break;
+         }
+      }
+      
+      // if (!SceneManager.GetActiveScene().isDirty) return;
    }
 
    private void LoadSettings()
@@ -104,10 +114,18 @@ public class AutoSave : EditorWindow
    private static void Save()
    {
       Scene activeScene = SceneManager.GetActiveScene();
-
+      
       try
       {
-         EditorSceneManager.SaveScene(activeScene);
+         for (int i = 0; i < EditorSceneManager.sceneCount; i++)
+         {
+            var scene = EditorSceneManager.GetSceneAt(i);
+            
+            if (scene.isDirty)
+               EditorSceneManager.SaveScene(scene);
+         }
+         
+         // EditorSceneManager.SaveScene(activeScene);
 
          if (_saveAssets)
             AssetDatabase.SaveAssets();
