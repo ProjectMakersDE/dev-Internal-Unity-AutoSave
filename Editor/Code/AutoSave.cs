@@ -121,8 +121,7 @@ public class AutoSave : EditorWindow
          {
             var scene = EditorSceneManager.GetSceneAt(i);
             
-            if (scene.isDirty)
-               EditorSceneManager.SaveScene(scene);
+            EditorSceneManager.SaveScene(scene);
          }
          
          // EditorSceneManager.SaveScene(activeScene);
