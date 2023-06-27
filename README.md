@@ -11,10 +11,10 @@ Deutsche Beschreibung:
       
 2.	Projektumfang
 	    Das Asset besteht aus dem C#-Skript und 9 Texturen.
-	    Getestet mit Unity 5.2 bis 2022.1.0.14b
+	    Getestet mit Unity 5.2 bis 2022.3.1f1
       
 3.	Im Detail
-        Debug.Log 	  		– Zeigt alle Aktionen welche von diesem Asset ausgeführt werden im Debog.Log an.
+        Debug.Log 	  		– Zeigt alle Aktionen welche von diesem Asset ausgeführt werden im Debug.Log an.
         Save on play 	  	– Speichert bei betätigung des Playbuttons.
         Save Assets 	  	– Speichert Assets.
         Save interval 	  	– Gibt an nach wieviel Minuten (1 - 30) gespeichert wird.
@@ -34,10 +34,10 @@ English Manual:
 
 2.	Scope of the project
         The asset consists of the C# script and 9 textures.
-        Tested with Unity 5.2 to 2018.2.0.5b
+        Tested with Unity 5.2 to 2022.3.1f1
       
 3.	Description
-        Debug.Log 	  	– Displays all actions performed by this asset in Debog.Log.
+        Debug.Log 	  	– Displays all actions performed by this asset in Debug.Log.
         Save on play 	– Saves when the playbuttons are activated.
         Save Assets 	– Save Assets.
         Save interval   – Specifies how many minutes (1 - 30) will be stored.
@@ -45,4 +45,4 @@ English Manual:
         Backup On/Off  	– Switches the Backup function on or off.
         Scene Folder 	– A folder is created with the host name and the name of the scene,
 						in this the respective scenes are stored.
-        Version	  		– The displayed version is the time in „ticks“.
+        Version	  		– The displayed version is the time in „ticks“.

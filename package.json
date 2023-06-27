@@ -2,9 +2,9 @@
   "name": "com.projectmakers.pmautosave",
   "version": "1.5.1",
   "displayName": "PM_AutoSave",
-  "description": "This is a small tool to save automatic and backup you scenes.\r \r Deutsche Beschreibung:\r \r 1.\tBeschreibung\r \t    Nichts ist wichtiger als regelmäßiges Speichern.\r \t    Doch schnell ist es passiert das man es vor dem testen einfach vergessen hat\r   \t    die",
-  "unity": "2018.1",
-  "unityRelease": "0b5",
+  "description": "Project background Nothing is more important than regular storage.\nBut it quickly happens that you forgot it before the test to save the scene.\nTo avoid this, there is now the AutoSave Editor.\r\nScope of the project The asset consists of the C# script and 9 textures.\nTested with Unity 5.2 to 2022.3.1f1\r\nDescription Debug.Log \u2013 Displays all actions performed by this asset in Debug.Log. \nSave on play \u2013 Saves when the playbuttons are activated.\nSave Assets \u2013 Save Assets.\nSave interval \u2013 Specifies how many minutes (1 - 30) will be stored.\nOn/Off \u2013 Switches the Autosave function on or off. \nBackup On/Off \u2013 Switches the Backup function on or off.\nScene Folder \u2013 A folder is created with the host name and the name of the scene, in this the respective scenes are stored.\nVersion \u2013 The displayed version is the time in \u201eticks\u201c.",
+  "unity": "2022.3",
+  "unityRelease": "1f1",
   "keywords": [
     "PM_AutoSave",
     "PM_AutoSave",
