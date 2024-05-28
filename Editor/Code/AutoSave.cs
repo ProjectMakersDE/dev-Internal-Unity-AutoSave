@@ -51,7 +51,7 @@ namespace PM.Tools
       private Texture2D AsBackup => AssetDatabase.LoadAssetAtPath(Path + "backup.png", typeof(Texture2D)) as Texture2D;
       private Texture2D PmLogo => AssetDatabase.LoadAssetAtPath(Path + "logo.png", typeof(Texture2D)) as Texture2D;
 
-      private int BackupCount => EditorPrefs.GetInt(BackupCountKey);
+      private static int BackupCount => EditorPrefs.GetInt(BackupCountKey);
 
       private string Path
       {
@@ -85,9 +85,9 @@ namespace PM.Tools
       {
          if (_lastAutosave.AddMinutes(_saveInterval) > DateTime.Now) return;
 
-         for (int i = 0; i < EditorSceneManager.sceneCount; i++)
+         for (int i = 0; i < SceneManager.sceneCount; i++)
          {
-            var scene = EditorSceneManager.GetSceneAt(i);
+            var scene = SceneManager.GetSceneAt(i);
 
             if (scene.isDirty)
             {
@@ -129,6 +129,15 @@ namespace PM.Tools
             Save();
       }
 
+      [InitializeOnLoadMethod]
+      private static void OpenWindowOnStart()
+      {
+         if (SessionState.GetBool("PM_AUTOSAVE_FIRSTSTART", false)) return;
+
+         OpenWindow();
+         SessionState.SetBool("PM_AUTOSAVE_FIRSTSTART", true);
+      }
+
       [MenuItem("Tools/ProjectMakers/AutoSave")]
       private static void OpenWindow()
       {
@@ -153,9 +162,9 @@ namespace PM.Tools
 
       private static void SaveAllDirtyScenes()
       {
-         for (int i = 0; i < EditorSceneManager.sceneCount; i++)
+         for (int i = 0; i < SceneManager.sceneCount; i++)
          {
-            var scene = EditorSceneManager.GetSceneAt(i);
+            var scene = SceneManager.GetSceneAt(i);
 
             if (!scene.isDirty) continue;
 
@@ -242,6 +251,8 @@ namespace PM.Tools
 
          if (_autoSave)
             AutosaveOn();
+         else
+            AutosaveOff();
       }
 
       private void OnGUI()
@@ -340,8 +351,6 @@ namespace PM.Tools
          _guiStyleLabel.fontSize = 12;
          _guiStyleLabel.fontStyle = FontStyle.Italic;
          _guiStyleLabel.normal.textColor = new Color(.58f, .58f, .58f);
-
-         GUILayout.Label("This window must be open for automatic saving!\nThe window does not have to be in the foreground, but don't close it.", _guiStyleLabel);
 
          GUILayout.FlexibleSpace();
          GUILayout.BeginHorizontal();
