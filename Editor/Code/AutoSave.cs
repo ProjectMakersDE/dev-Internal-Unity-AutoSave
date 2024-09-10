@@ -144,6 +144,7 @@ namespace PM.Tools
       [MenuItem("Tools/ProjectMakers/AutoSave")]
       private static void OpenWindow()
       {
+         Debug.Log($"Opening AutoSave window...");
          GetWindow<AutoSave>("AutoSave");
       }
 
