@@ -129,18 +129,6 @@ namespace PM.Tools
             Save();
       }
 
-      [InitializeOnLoadMethod]
-      private static void OpenWindowOnStart()
-      {
-          if (SessionState.GetBool("PM_AUTOSAVE_FIRSTSTART", false)) return;
-      
-          var existingWindow = GetWindow<AutoSave>(false, "AutoSave", false);
-          if (existingWindow != null) return;
-      
-          OpenWindow();
-          SessionState.SetBool("PM_AUTOSAVE_FIRSTSTART", true);
-      }
-
       [MenuItem("Tools/ProjectMakers/AutoSave")]
       private static void OpenWindow()
       {
